@@ -1,29 +1,36 @@
 """This module perform operations about database."""
 import mysql.connector
-
+import sqlite3
 
 def mysql_switch(onoff):
     """
     Turn on/off MySQL server.
     :param onoff: An integer 0 for Off, 1 for On
     """
-    import commands
+    import subprocess
     if onoff == 0:
-        print commands.getstatusoutput("mysql.server stop")
+        print (subprocess.getstatusoutput("mysql.server stop"))
     elif onoff == 1:
-        print commands.getstatusoutput("mysql.server start")
+        print (subprocess.getstatusoutput("mysql.server start"))
 
 
-def connect_db():
+def connect_db_mysql():
     """Connect database and return connection, cursor."""
     config = {
-      'user': 'root',
-      'password': 'root',
-      'host': 'localhost',
+      'user': 'wogong',
+      'password': 'wogong_CC123',
+      'host': '192.168.50.2',
       'database': 'time',
       'raise_on_warnings': True,
     }
     cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+    return cnx, cursor
+
+
+def connect_db(database='time.db'):
+    """Connect database and return connection, cursor."""
+    cnx = sqlite3.connect(database);
     cursor = cnx.cursor()
     return cnx, cursor
 
@@ -37,8 +44,8 @@ def empty_db(table='both', op='truncate'):
     cnx, cursor = connect_db()
     echo, query1, query2 = ("",)*3
     if op == 'truncate':
-        query1 = "truncate table intervals"
-        query2 = "truncate table types"
+        query1 = "DELETE FROM intervals"
+        query2 = "DELETE FROM types"
         echo = 'Database is truncated.'
     elif op == 'drop':
         query1 = 'drop table intervals'
@@ -53,12 +60,12 @@ def empty_db(table='both', op='truncate'):
         cursor.execute(query2)
     cnx.commit()
     cnx.close()
-    print echo
+    print (echo)
 
 
-def create_types_table():
+def create_types_table(database):
     """Create `types` table in database."""
-    cnx, cursor = connect_db()
+    cnx, cursor = connect_db(database)
     create_types = ("create table types(\n"
                     "    guid char(36) not null,\n"
                     "    `group` tinyint(1) not null,\n"
@@ -76,9 +83,9 @@ def create_types_table():
     cnx.close()
 
 
-def create_intervals_table():
+def create_intervals_table(database):
     """Create `intervals` table in database."""
-    cnx, cursor = connect_db()
+    cnx, cursor = connect_db(database)
     create_intervals = ("create table intervals(\n"
                         "    guid char(36) not null,\n"
                         "    type char(36) not null,\n"
@@ -94,10 +101,10 @@ def create_intervals_table():
     cnx.close()
 
 
-def create_all_tables():
+def create_all_tables(database):
     """Create all necessary tables in database"""
-    create_types_table()
-    create_intervals_table()
+    create_types_table(database)
+    create_intervals_table(database)
 
 
 def insert_types(json):

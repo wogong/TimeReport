@@ -1,5 +1,15 @@
 # Time Report
-Integrate time tracking app [aTimeLogger](http://www.atimelogger.com), note taking app [Evernote](https://evernote.com) and Mac productivity app [Alfred](https://www.alfredapp.com) to easily generate self time analysis report.
+Generating daily/weekly/monthly time report using [aTimeLogger](http://www.atimelogger.com) backend.
+
+## Note
+This repository is forked from [TimeReport](https://github.com/YujiShen/TimeReport).
+Significant code changes as follows:
+1. MySQL to sqlite3
+2. Compatibility upgrade for Python 3 and Pandas
+3. Remove Evernote support
+4. Arguments interface update
+
+Code has not been cleaned.
 
 ## Introduction
 ### Stage
@@ -17,16 +27,13 @@ It is highly customized, so currently only myself.
 My final goal is to build a webapp to replace aTimeLogger as my customized time tracking tool, for more flexibility to edit data and better integration with task management system. But this will not happen very soon, both my knowledge and time are not enough.
 
 ## Basic Flow
-After retrieving all history data from aTimeLogger, building MySQL database, for each day/week/month, simply use Alfred to choose an action:
-
-<p align="center"><img src="https://raw.githubusercontent.com/YujiShen/TimeReport/master/images/workflow.png" width="600"></p>
+After retrieving all history data from aTimeLogger, building SQLite3 database.
 
 Underlying procedures:
 
 1. Get new data from aTimeLogger API, update database.
 2. Utilize pandas, numpy to transform, aggregate, analyze data according to different time frame.
 3. Draw plots and tables in matplotlib, save in files. See 'Gallery' for examples.
-4. Create note via Evernote API, add images and headings, push to my Evernote account.
 
 ## Gallery
 ### Sleep Comparison Table
@@ -67,3 +74,4 @@ This 3x3 grid stacked bar chart (horizontal) to get the trends of each types in 
 <p align="center"><img src="https://raw.githubusercontent.com/YujiShen/TimeReport/master/images/type_line.png" width="800"></p>
 
 A flexible plot to compare given types or groups in line plot.
+

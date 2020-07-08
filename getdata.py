@@ -13,13 +13,13 @@ def get_sleep_data(start, end):
     :return: a list of tuples (start, end, duration).
     """
     cnx, cursor = connect_db()
-    query = """select intervals.from, intervals.to, delta
+    query = """select "from" as _if, "to" as _it, delta
             from types, intervals
             where intervals.type = types.guid and
-            types.name = 'Sleep' and
-            intervals.to > {0} and
-            intervals.to < {1}
-            order by intervals.to""".format(start, end)
+            types.name = 'S1:Sleep' and
+            _it > {0} and
+            _it < {1}
+            order by _it""".format(start, end)
     cursor.execute(query)
     sleep_entries = cursor.fetchall()
     cnx.close()
@@ -37,7 +37,7 @@ def get_sleep_dataframe(start, end):
     entries = get_sleep_data(start, end)
     dataframe = pd.DataFrame(entries, columns=['from', 'to', 'delta'])
     dataframe['date'] = dataframe['from'].apply(
-        lambda x: ts2date(ts2datetime(x).replace(days=1)) if ts2datetime(x).hour >= 19 else ts2date(x))
+        lambda x: ts2date(ts2datetime(x).shift(days=1)) if ts2datetime(x).hour >= 19 else ts2date(x))
 
     # aggregate duplicate date duration
     agg_duration = dataframe[['delta', 'date']].groupby('date').aggregate(np.sum)
@@ -52,13 +52,12 @@ def get_sleep_dataframe(start, end):
 
 def get_data(start, end):
     cnx, cursor = connect_db()
-    query = """select intervals.from, intervals.to, delta, a.name, b.name, comment
-            from types a, types b, intervals
+    query = """select "from" as _if, "to" as _it, delta, a.name, comment
+            from types a, intervals
             where intervals.type = a.guid and
-            a.parent = b.guid and
-            intervals.to > {0} and
-            intervals.from < {1}
-            order by intervals.to""".format(start, end)
+            _it > {0} and
+            _if < {1}
+            order by _it""".format(start, end)
     cursor.execute(query)
     entries = cursor.fetchall()
     cnx.close()
@@ -67,7 +66,20 @@ def get_data(start, end):
 
 def get_dataframe(start, end):
     data = get_data(start, end)
-    dataframe = pd.DataFrame(data, columns=['from', 'to', 'delta', 'type', 'group', 'comment'])
+    data_group_added = []
+    group_dict = {
+        'S1': 'Sleep',
+        'S2': 'Work',
+        'S3': 'Develop',
+        'S4': 'Maintain',
+        'S5': 'Entertain',
+    }
+    for item in data:
+        item_list = list(item)
+        group = group_dict[item[3][:2]]
+        item_list.append(group)
+        data_group_added.append(item_list)
+    dataframe = pd.DataFrame(data_group_added, columns=['from', 'to', 'delta', 'type', 'comment', 'group'])
     return dataframe
 
 
@@ -80,11 +92,11 @@ def get_cut_dataframe(start, end):
     """
     data = get_dataframe(start, end)
     nrow = data.shape[0]
-    data.ix[0, 'from'] = start
-    data.ix[0, 'delta'] = data.ix[0, 'to'] - start
-    if data.ix[nrow-1, 'to'] > end:
-        data.ix[nrow-1, 'to'] = end
-        data.ix[nrow-1, 'delta'] = end - data.ix[nrow-1, 'from']
+    data.loc[0, 'from'] = start
+    data.loc[0, 'delta'] = data.loc[0, 'to'] - start
+    if data.loc[nrow-1, 'to'] > end:
+        data.loc[nrow-1, 'to'] = end
+        data.loc[nrow-1, 'delta'] = end - data.loc[nrow-1, 'from']
     return data
 
 
@@ -109,21 +121,21 @@ def get_cut_day_dataframe(start, end):
             ind += 1
         elif row['from'] < point[ind] < row['to']:
             if index == 0:
-                data.ix[0, 'from'] = start
-                data.ix[0, 'delta'] = data.ix[0, 'to'] - data.ix[0, 'from']
+                data.loc[0, 'from'] = start
+                data.loc[0, 'delta'] = data.loc[0, 'to'] - data.loc[0, 'from']
             elif index == len(entries)-1:
-                data.ix[data.index[-1:], 'to'] = end
-                data.ix[data.index[-1:], 'delta'] = data.ix[data.index[-1:], 'to'] - data.ix[data.index[-1:], 'from']
-                data.ix[data.index[-1:], 'datetime'] = ts2date(data.ix[data.index[-1:], 'from'])
+                data.loc[data.index[-1:], 'to'] = end
+                data.loc[data.index[-1:], 'delta'] = data.loc[data.index[-1:], 'to'] - data.loc[data.index[-1:], 'from']
+                data.loc[data.index[-1:], 'datetime'] = ts2date(data.loc[data.index[-1:], 'from'])
                 break
             else:
                 row = entries.iloc[[index]].copy()
-                row.ix[index, 'delta'] = abs(point[ind]-row.ix[index, 'from'])
-                row.ix[index, 'to'] = point[ind]
-                row.ix[index, 'datetime'] = ts2date(row.ix[index, 'from'])
+                row.loc[index, 'delta'] = abs(point[ind]-row.loc[index, 'from'])
+                row.loc[index, 'to'] = point[ind]
+                row.loc[index, 'datetime'] = ts2date(row.loc[index, 'from'])
                 newInd = index + newRow
-                data.ix[newInd, 'delta'] = abs(point[ind]-data.ix[newInd, 'to'])
-                data.ix[newInd, 'from'] = point[ind]
+                data.loc[newInd, 'delta'] = abs(point[ind]-data.loc[newInd, 'to'])
+                data.loc[newInd, 'from'] = point[ind]
                 data = pd.concat([data[:newInd], row, data[newInd:]])
                 data = data.reset_index(drop=True)
                 newRow += 1
@@ -155,12 +167,12 @@ def get_cut_level_dataframe(start, end, level):
                 ind += 1
             elif row['from'] < break_point[ind] < row['to']:
                 row = entries.iloc[[index]].copy()
-                row.ix[index, 'delta'] = abs(break_point[ind]-row.ix[index, 'from'])
-                row.ix[index, 'to'] = break_point[ind]
-                row.ix[index, 'datetime'] = ts2date(row.ix[index, 'from'])
+                row.loc[index, 'delta'] = abs(break_point[ind]-row.loc[index, 'from'])
+                row.loc[index, 'to'] = break_point[ind]
+                row.loc[index, 'datetime'] = ts2date(row.loc[index, 'from'])
                 new_ind = index + new_row
-                data.ix[new_ind, 'delta'] = abs(break_point[ind]-data.ix[new_ind, 'to'])
-                data.ix[new_ind, 'from'] = break_point[ind]
+                data.loc[new_ind, 'delta'] = abs(break_point[ind]-data.loc[new_ind, 'to'])
+                data.loc[new_ind, 'from'] = break_point[ind]
                 data = pd.concat([data[:new_ind], row, data[new_ind:]])
                 data = data.reset_index(drop=True)
                 new_row += 1

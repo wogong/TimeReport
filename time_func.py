@@ -2,6 +2,7 @@
 import arrow
 from datetime import datetime
 from datetime import timedelta
+import numpy as np
 
 SEC_HOUR = 60 * 60.
 SEC_DAY = SEC_HOUR * 24
@@ -33,13 +34,13 @@ def quick_range(current=True, shift=0, unit='days'):
     :param unit: days/weeks/months/years
     :return: (int) start, (int) end
     """
-    now = arrow.get(datetime.now(), 'US/Eastern')
+    now = arrow.get(datetime.now(), 'Asia/Shanghai')
     current = 0 if current else 1
     # build arguments for arrow.replace()
     end_arg = {unit: current*(-1)}
     start_arg = {unit: shift*(-1)}
-    end = now.replace(**end_arg)
-    start = end.replace(**start_arg)
+    end = now.shift(**end_arg)
+    start = end.shift(**start_arg)
 
     start = start.floor(unit[:-1]).timestamp
     end = end.ceil(unit[:-1]).timestamp + 1
@@ -60,34 +61,34 @@ def human_qr(phrase):
     return start, end
 
 
-def str2datetime(date_string, tzinfo='US/Eastern'):
+def str2datetime(date_string, tzinfo='Asia/Shanghai'):
     """
     Transform a date string into Arrow datetime object.
     :param date_string: A string of date (e.g. "20150112").
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: Arrow datetime
     """
     date_time = arrow.get(date_string, "YYYYMMDD", tzinfo=tzinfo)
     return date_time
 
 
-def str2ts(date_string, tzinfo='US/Eastern'):
+def str2ts(date_string, tzinfo='Asia/Shanghai'):
     """
     Transform a date string into unix timestamp (beginning of the date).
     :param date_string: a date string in form of "YYYYMMDD".
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: (int) unix timestamp
     """
     timestamp = str2datetime(date_string, tzinfo=tzinfo).timestamp
     return timestamp
 
 
-def str2range(date_string1, date_string2, tzinfo='US/Eastern'):
+def str2range(date_string1, date_string2, tzinfo='Asia/Shanghai'):
     """
     Get unix timestamps for two date string as a range, not including the second date.
     :param date_string1: a date string in form of "YYYYMMDD".
     :param date_string2: a date string in form of "YYYYMMDD".
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: (int) start, (int) end
     """
     start = str2ts(date_string1, tzinfo=tzinfo)
@@ -95,7 +96,7 @@ def str2range(date_string1, date_string2, tzinfo='US/Eastern'):
     return start, end
 
 
-def str2level_range(date_string, level, tzinfo='US/Eastern'):
+def str2level_range(date_string, level, tzinfo='Asia/Shanghai'):
     """
     Get start and end unix timestamps for given date string.
         Day: "YYYYMMDD", e.g. "20151225"
@@ -103,7 +104,7 @@ def str2level_range(date_string, level, tzinfo='US/Eastern'):
         Month: "YYYYMmm", e.g. "2000M03"
     :param date_string: a date string.
     :param level: An integer for different time levels.
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: (int) start, (int) end
     """
     start = None
@@ -115,45 +116,45 @@ def str2level_range(date_string, level, tzinfo='US/Eastern'):
         start = parse_week_number(date_string, tzinfo).timestamp
     elif level == 2:
         return week_of_month(date_string, tzinfo)
-    end = ts2datetime(start, tzinfo=tzinfo).replace(**replace_arg).timestamp
+    end = ts2datetime(start, tzinfo=tzinfo).shift(**replace_arg).timestamp
     return start, end
 
 
-def week_of_month(month_str, tzinfo='US/Eastern'):
+def week_of_month(month_str, tzinfo='Asia/Shanghai'):
     year, month = month_str.split('M')
     # every 4th of that month will in the first week for that month
     month_4th = arrow.get(year+month+"04", "YYYYMMDD", tzinfo=tzinfo)
     week_start = month_4th.floor('week').timestamp
-    week_end = month_4th.replace(months=+1).replace(weeks=-1).ceil('week').timestamp+1
+    week_end = month_4th.shift(months=+1).shift(weeks=-1).ceil('week').timestamp+1
     return week_start, week_end
 
 
-def ts2datetime(timestamp, tzinfo='US/Eastern'):
+def ts2datetime(timestamp, tzinfo='Asia/Shanghai'):
     """
     Get Arrow datetime object from unix timestamp
     :param timestamp: A integer of unix timestamp.
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: Arrow datetime
     """
     return arrow.get(timestamp).to(tzinfo)
 
 
-def ts2date(timestamp, tzinfo='US/Eastern'):
+def ts2date(timestamp, tzinfo='Asia/Shanghai'):
     """
     Get Arrow date object from unix timestamp
     :param timestamp: A integer of unix timestamp.
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: Arrow date
     """
     return ts2datetime(timestamp, tzinfo).date()
 
 
-def ts2str_level(timestamp, level, tzinfo='US/Eastern'):
+def ts2str_level(timestamp, level, tzinfo='Asia/Shanghai'):
     """
     Transform unix timestamp into date string.
     :param level: (int) time frame number
     :param timestamp: A integer of unix timestamp.
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: (str) describes its time frame.
     """
     date_time = ts2datetime(timestamp, tzinfo)
@@ -167,11 +168,11 @@ def ts2str_level(timestamp, level, tzinfo='US/Eastern'):
     return date_string
 
 
-def ts2str_hm(timestamp, tzinfo='US/Eastern'):
+def ts2str_hm(timestamp, tzinfo='Asia/Shanghai'):
     """
     Transform unix timestamp into string of hour and minute at the time.
     :param timestamp: A integer of unix timestamp.
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: A string in form of "HH:mm".
     """
     return ts2datetime(timestamp, tzinfo).format("HH:mm")
@@ -185,10 +186,16 @@ def sec2str(duration, sign=False):
     :return: string format of duration
     """
     positive = True if duration >= 0 else False
+    if isinstance(duration, np.int64):
+        duration = duration.item()
     td = timedelta(seconds=abs(duration))
     day = td.days
-    hour = td.seconds/3600
-    minute = (td.seconds/60) % 60
+    hour = td.seconds//3600
+    minute = (td.seconds//60) % 60
+
+    hours, remainder = divmod(td.seconds, 60 * 60)
+    minutes, seconds = divmod(remainder, 60)
+
     time_str = str(minute) + 'm'
     if hour != 0:
         time_str = str(hour) + 'h ' + time_str
@@ -202,12 +209,12 @@ def sec2str(duration, sign=False):
     return time_str
 
 
-def ts_cross_day(timestamp, tzinfo='US/Eastern'):
+def ts_cross_day(timestamp, tzinfo='Asia/Shanghai'):
     """
     Make timestamps in the last night and next day before dawn comparable for sleep analysis.
         Transform a time before 20:00 into next day in seconds, and after 20:00 into one day in seconds.
     :param timestamp: A integer of unix timestamp.
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: An integer of time in in seconds.
     """
     date_time = ts2datetime(timestamp, tzinfo=tzinfo)
@@ -252,7 +259,7 @@ def day_info(date_string=None):
             suffix = ["st", "nd", "rd"][day % 10 - 1]
     else:
         suffix = "th"
-    next_year = date.replace(years=1).floor('year')
+    next_year = date.shift(years=1).floor('year')
     rest_days = (next_year - date).days - 1
     if rest_days > 1:
         strings = date.strftime('Today is %A, %b. %d,  Week %V, the %j{0} day of %Y. '
@@ -263,28 +270,28 @@ def day_info(date_string=None):
     return strings
 
 
-def parse_week_number(week_str, tzinfo='US/Eastern'):
+def parse_week_number(week_str, tzinfo='Asia/Shanghai'):
     """
     Parse week number string into the monday of that week
     :param week_str: (string) describe weeks, e.g. "1991W05".
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: datetime
     """
     try:
         year, week = week_str.split('W')
         # every 4 Jan will in the first week (ISO)
         week_01 = arrow.get(year+"0104", "YYYYMMDD", tzinfo=tzinfo).floor('week')
-        monday = week_01.replace(weeks=int(week)-1)
+        monday = week_01.shift(weeks=int(week)-1)
         return monday
     except ValueError:
-        print "Please input week number in the form of '1990W05'."
+        print ("Please input week number in the form of '1990W05'.")
 
 
-def break_level(start, end, level, tzinfo='US/Eastern'):
+def break_level(start, end, level, tzinfo='Asia/Shanghai'):
     """
     Return a list of unix timestamp break the start and end time according to given time frame.
     start and end are not included.
-    :param tzinfo: A string for timezone, default is 'US/Eastern'.
+    :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :param start: integer of unix timestamp.
     :param end: integer of unix timestamp.
     :param level: int of time frame
@@ -294,7 +301,7 @@ def break_level(start, end, level, tzinfo='US/Eastern'):
     end_time = ts2datetime(end, tzinfo=tzinfo)
     break_points = []
     if level == 0:
-        break_points = arrow.Arrow.range('day', start_time, end_time)[1:-1]
+        break_points = list(arrow.Arrow.range('day', start_time, end_time))
     else:
         replace_arg = {LEVEL2STR[level]: 1}
         if (level == 1 and start_time.isocalendar()[:2] == end_time.isocalendar()[:2]) or \

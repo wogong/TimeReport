@@ -86,7 +86,7 @@ def sleep_plot(data, smooth=False):
     fig.savefig('img/sleep_plot', bbox_inches='tight', dpi=200)
 
 
-def group_pie_plot(data):
+def group_pie_plot(data, date='none'):
     """
     Plot pie chart of data aggregated by groups, save in png file.
     :param data: (dataframe) cut data.
@@ -117,7 +117,7 @@ def group_pie_plot(data):
         w.set_edgecolor(c)
 
     pie_table = pie_data[['group', 'pctStr', 'deltaStr', 'avg']]
-    tbl = ax1.table(cellText=pie_table.as_matrix(),
+    tbl = ax1.table(cellText=pie_table.to_numpy(),
                     cellLoc='center',
                     colWidths=[0.15, 0.2, 0.3, 0.25],
                     colLabels=['Group', 'Pct', 'Duration', 'Avg'],
@@ -135,7 +135,7 @@ def group_pie_plot(data):
         cell.set_edgecolor('gray')
         cell.set_linewidth(1)
         text = cell_dict[(i, j)].get_text()
-        text.set_family('DINPro')
+        #text.set_family('DINPro')
         text.set_weight('medium')
         if i == 0:
             cell.set_height(0.07)
@@ -147,14 +147,14 @@ def group_pie_plot(data):
         if j == 0 < i:
             cell.set_facecolor(color[i - 1])
             cell.set_edgecolor(color[i - 1])
-            text.set_family('Verdana')
+            #text.set_family('Verdana')
             text.set_color('white')
             text.set_weight('bold')
             text.set_fontsize(13)
 
     fig.subplots_adjust(left=0, bottom=0, right=1, top=1,
                         wspace=0, hspace=0)
-    fig.savefig('img/group_pie', dpi=200)
+    fig.savefig('img/group_pie_'+date, dpi=200)
 
 
 def agg_line_plot(agg_data, cate, level, fmla='Sum',
@@ -354,7 +354,7 @@ def task_table_plot(task_data):
                 fontsize = 9
         else:
             loc = 'center'
-            font_family = 'DINPro'
+            #font_family = 'DINPro'
             if j > 3:
                 fontsize = 9
         tbl.add_cell(i, j, col_widths[j], height, text=val,
@@ -378,7 +378,7 @@ def task_table_plot(task_data):
     fig.savefig('img/task_table', bbox_inches='tight', pad_inches=0.1, dpi=200)
 
 
-def sleep_table_plot(data):
+def sleep_table_plot(data, date):
     """
     Plot sleep compare table, save in png file.
     :param data: dataframe from sleep_compare().
@@ -388,7 +388,7 @@ def sleep_table_plot(data):
     fig = plt.figure(figsize=(1, nrow*0.3))
     ax = fig.add_subplot(111)
     ax.axis('off')
-    tbl = ax.table(cellText=data.as_matrix(),
+    tbl = ax.table(cellText=data.to_numpy(),
                    colLabels=data.columns,
                    rowLabels=data.index,
                    colWidths=[2.5]*3,
@@ -398,13 +398,13 @@ def sleep_table_plot(data):
     tbl.set_fontsize(16)
 
     cell_dict = tbl.get_celld()
-    for i, j in itertools.product(range(nrow), [-1]+range(ncol)):
+    for i, j in itertools.product(list(range(nrow)), [-1]+list(range(ncol))):
         if (i, j) != (0, -1):
             cell = cell_dict[(i, j)]
             text = cell_dict[(i, j)].get_text()
             cell.set_linewidth(1)
             cell.set_edgecolor('gray')
-            text.set_family('DINPro')
+            #text.set_family('DINPro')
             text.set_weight('medium')
             if i == 0:
                 cell.set_facecolor('gray')
@@ -421,10 +421,10 @@ def sleep_table_plot(data):
                 text.set_fontsize(12)
     tbl.scale(1, 2.5)
     ax.margins(0, 0)
-    fig.savefig('img/sleep_table', bbox_inches='tight', pad_inches=0.1, dpi=200)
+    fig.savefig('img/sleep_table_'+date, bbox_inches='tight', pad_inches=0.1, dpi=200)
 
 
-def type_table_plot(type_data):
+def type_table_plot(type_data, date='none'):
     """
     Plot type detail statistics table, save in png file.
     :param type_data: dataframe from get_type_detail().
@@ -450,7 +450,7 @@ def type_table_plot(type_data):
             font_family = None
         else:
             loc = 'center'
-            font_family = 'DINPro'
+            #font_family = 'DINPro'
         tbl.add_cell(i, j, width, height*0.7, text=val,
                      loc=loc, facecolor=fc, edgecolor=fontcolor)
         cell = tbl.get_celld()[(i, j)]

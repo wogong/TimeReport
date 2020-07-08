@@ -11,8 +11,8 @@ def sleep_compare(base_day=None, range_days=7):
     :param range_days: time range of previous days
     """
     if base_day is not None:
-        end = str2datetime(base_day).replace(days=1).timestamp
-        start = ts2datetime(end).replace(days=-range_days).timestamp
+        end = str2datetime(base_day).shift(days=1).timestamp
+        start = ts2datetime(end).shift(days=-range_days).timestamp
     else:
         sentence = 'this {0} days'.format(range_days)
         start, end = human_qr(sentence)
@@ -23,24 +23,25 @@ def sleep_compare(base_day=None, range_days=7):
 
     # If base day and the date of last entry is not the same day
     # We do no have the data on base day
+    last_day = ts2str_level(data['to'].values[-1], 0)
     if (base_day is not None) and (base_day != ts2str_level(data['to'].values[-1], 0)):
-        print base_day
+        print (base_day)
         return 'No data yet.'
 
     bed, last_bed = ts2str_hm(data['from'].values[-1]), ts2str_hm(data['from'].values[-2])
-    dataframe.ix['Bed Time', 'Today'] = bed
+    dataframe.loc['Bed Time', 'Today'] = bed
     getup, last_getup = ts2str_hm(data['to'].values[-1]), ts2str_hm(data['to'].values[-2])
-    dataframe.ix['Up Time', 'Today'] = getup
+    dataframe.loc['Up Time', 'Today'] = getup
     bed_delta = sec2str(ts_cross_day(data['from'].values[-1]) - ts_cross_day(data['from'].values[-2]), True)
     getup_delta = sec2str(ts_cross_day(data['to'].values[-1]) - ts_cross_day(data['to'].values[-2]), True)
-    dataframe.ix['Bed Time', 'v.s Yesterday'], dataframe.ix['Up Time', 'v.s Yesterday'] = bed_delta, getup_delta
+    dataframe.loc['Bed Time', 'v.s Yesterday'], dataframe.loc['Up Time', 'v.s Yesterday'] = bed_delta, getup_delta
 
     entry = data.iloc[-1, ]
     entry_str = sec2str(entry['delta'])
     last_entry = data.iloc[-2, ]
     delta = entry['delta'] - last_entry['delta']
     delta_str = sec2str(delta, True)
-    dataframe.ix['Length', 'Today'], dataframe.ix['Length', 'v.s Yesterday'] = entry_str, delta_str
+    dataframe.loc['Length', 'Today'], dataframe.loc['Length', 'v.s Yesterday'] = entry_str, delta_str
 
     len_rank = "#" + str(int(data.rank().delta.values[-1]))
     bed_rank = "#" + str(int(data['from'].map(lambda x: ts_cross_day(x)).rank().values[-1]))
@@ -65,7 +66,7 @@ def get_pie_data(cut_data):
     table['pct'] = table.delta/total_delta
     table['pctStr'] = table['pct'].map(lambda x: str(round(x*100, 1)) + '%')
     table['rPct'] = table.apply(lambda x:
-                                x['delta']*1.0/table_group.ix[table_group.group == x['group'], 'delta'].item(), axis=1)
+                                x['delta']*1.0/table_group.loc[table_group.group == x['group'], 'delta'].item(), axis=1)
     table['rPctStr'] = table['rPct'].map(lambda x: str(round(x*100, 1)) + '%')
     table['deltaStr'] = table['delta'].map(sec2str)
     table['avg'] = table['delta'].map(lambda x: sec2str(x * 1.0 / num_date))
@@ -105,14 +106,14 @@ def get_task_table(cut_data):
     :param cut_data: dataframe cut with start and end
     """
     data = cut_data.copy()
-    result = data.ix[:, ('comment', 'type', 'group', 'delta')]
-    result = result.groupby(['comment', 'type', 'group'])['delta'].agg(AGG_DICT)
+    result = data.loc[:, ('comment', 'type', 'group', 'delta')]
+    result = result.groupby(['comment', 'type', 'group'])['delta'].agg(Sum='sum', NUm='count', Std='std', Avg='mean', Min='min', Max='max', Median='median')
     result.sort_values(by=['Sum'], inplace=True, ascending=False)
     result.fillna(value=0, inplace=True)
     result = result.reset_index()
     result.rename(columns={'comment': 'Task', 'type': 'Type', 'group': 'Group'}, inplace=True)
-    result = result[['Group', 'Type', 'Task', 'Num', 'Sum', 'Avg', 'Std', 'Median', 'Min', 'Max']]
-    result.ix[:, 4:] = result.ix[:, 4:].applymap(sec2str)
+    #result = result[['Group', 'Type', 'Task', 'Num', 'Sum', 'Avg', 'Std', 'Median', 'Min', 'Max']]
+    #result.loc[:, 4:] = result.loc[:, 4:].applymap(sec2str)
     return result
 
 

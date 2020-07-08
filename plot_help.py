@@ -28,7 +28,15 @@ def get_palette():
     cursor.execute(query)
     color = cursor.fetchall()
     cnx.close()
-    color = {x[0]: '#' + format(x[1], 'x') for x in color}
+    group_dict = {
+        'S1': 'Sleep',
+        'S2': 'Work',
+        'S3': 'Develop',
+        'S4': 'Maintain',
+        'S5': 'Entertain',
+    }
+    color = {group_dict[x[0][:2]]: '#' + format(x[1], 'x') for x in color}
+
     return color
 
 

@@ -1,5 +1,5 @@
-import evernote.edam.type.ttypes as ever_types
-from evernote.api.client import EvernoteClient
+# import evernote.edam.type.ttypes as ever_types
+# from evernote.api.client import EvernoteClient
 import binascii
 import hashlib
 from analysis import LEVEL2STR
@@ -194,7 +194,7 @@ def create_tag(tag_list):
     return result
 
 
-def date_tag(timestamp, level, tzinfo='US/Eastern'):
+def date_tag(timestamp, level, tzinfo='Asia/Shanghai'):
     """
     Create tags element for notes.
     :param timestamp: unix start time of the date.

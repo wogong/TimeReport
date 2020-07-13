@@ -154,7 +154,7 @@ def group_pie_plot(data, date='none'):
 
     fig.subplots_adjust(left=0, bottom=0, right=1, top=1,
                         wspace=0, hspace=0)
-    fig.savefig('img/group_pie_'+date, dpi=200)
+    fig.savefig('img/'+date+'.png', dpi=200)
 
 
 def agg_line_plot(agg_data, cate, level, fmla='Sum',

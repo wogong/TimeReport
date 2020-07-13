@@ -136,6 +136,8 @@ def ts2datetime(timestamp, tzinfo='Asia/Shanghai'):
     :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: Arrow datetime
     """
+    if isinstance(timestamp, np.int64):
+        timestamp = timestamp.item()
     return arrow.get(timestamp).to(tzinfo)
 
 
@@ -146,6 +148,8 @@ def ts2date(timestamp, tzinfo='Asia/Shanghai'):
     :param tzinfo: A string for timezone, default is 'Asia/Shanghai'.
     :return: Arrow date
     """
+    if isinstance(timestamp, np.int64):
+        timestamp = timestamp.item()
     return ts2datetime(timestamp, tzinfo).date()
 
 

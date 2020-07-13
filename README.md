@@ -11,6 +11,10 @@ Significant code changes as follows:
 
 Code has not been cleaned.
 
+## Usage
+- generate daily report
+    - `python main.py -r -l 0` last day report
+    - `python main.py -r 20200711`
 ## Introduction
 ### Stage
 Early. In latest update, transform developing environment from Jupyter Notebook to PyCharm. Making it more like a program.
@@ -74,4 +78,3 @@ This 3x3 grid stacked bar chart (horizontal) to get the trends of each types in 
 <p align="center"><img src="https://raw.githubusercontent.com/YujiShen/TimeReport/master/images/type_line.png" width="800"></p>
 
 A flexible plot to compare given types or groups in line plot.
-

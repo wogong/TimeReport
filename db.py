@@ -1,32 +1,5 @@
 """This module perform operations about database."""
-import mysql.connector
 import sqlite3
-
-def mysql_switch(onoff):
-    """
-    Turn on/off MySQL server.
-    :param onoff: An integer 0 for Off, 1 for On
-    """
-    import subprocess
-    if onoff == 0:
-        print (subprocess.getstatusoutput("mysql.server stop"))
-    elif onoff == 1:
-        print (subprocess.getstatusoutput("mysql.server start"))
-
-
-def connect_db_mysql():
-    """Connect database and return connection, cursor."""
-    config = {
-      'user': 'wogong',
-      'password': 'wogong_CC123',
-      'host': '192.168.50.2',
-      'database': 'time',
-      'raise_on_warnings': True,
-    }
-    cnx = mysql.connector.connect(**config)
-    cursor = cnx.cursor()
-    return cnx, cursor
-
 
 def connect_db(database='time.db'):
     """Connect database and return connection, cursor."""

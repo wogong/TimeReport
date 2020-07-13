@@ -3,9 +3,9 @@
 
 query = "{query}"
 xml = "<items>"
-cmd = "cd /Users/Yuji/Workspace/Python/TimeReport &amp;&amp; python test.py"
-cmd_update = "cd /Users/Yuji/Workspace/Python/TimeReport &amp;&amp; python test.py -o db -u 0"
-cmd_rebuild = "cd /Users/Yuji/Workspace/Python/TimeReport &amp;&amp; python test.py -o db -u 1"
+cmd = "cd /Users/Yuji/Workspace/Python/TimeReport &amp;&amp; python main.py"
+cmd_update = "cd /Users/Yuji/Workspace/Python/TimeReport &amp;&amp; python main.py -o db -u 0"
+cmd_rebuild = "cd /Users/Yuji/Workspace/Python/TimeReport &amp;&amp; python main.py -o db -u 1"
 
 if query:
     cmd_day = "{0} -d {1}".format(cmd, query)
@@ -53,4 +53,4 @@ xml += rebuild
 
 xml += "</items>"
 
-print xml
+print (xml)

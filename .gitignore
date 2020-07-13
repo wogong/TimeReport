@@ -12,3 +12,4 @@ applescript.py
 .tags_lock
 tags
 *.db
+*.tmp

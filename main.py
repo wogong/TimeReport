@@ -6,6 +6,7 @@ from time_api import *
 from plot_func import *
 import argparse
 import os
+import sys
 
 
 def update_db():
@@ -67,8 +68,8 @@ def daily_report(date=None):
         start, end = human_qr('last 1 days')
         date_info = day_info()
     title = ts2str_level(start, 0)
-    sleep_data = sleep_compare(date)
-    sleep_table_plot(sleep_data, date)
+    # sleep_data = sleep_compare(date)
+    # sleep_table_plot(sleep_data, date)
     last_cut = get_cut_level_dataframe(start, end, 0)
     group_pie_plot(last_cut, date)
     task_data = get_task_table(last_cut)
@@ -96,7 +97,7 @@ def weekly_report(week=None):
     title = ts2datetime(start).strftime("%Y Week%V ({0} - {1})".format(start_date, end_date))
 
     cut_data = get_cut_dataframe(start, end)
-    group_pie_plot(cut_data)
+    group_pie_plot(cut_data, week)
     # type_data = get_type_detail(cut_data)
     # type_table_plot(type_data)
     # agg_data_group = agg_level(start, end, 'group', 0)
@@ -126,7 +127,7 @@ def monthly_report(month=None):
     tags = date_tag(start, 2)
 
     cut_data = get_cut_dataframe(start, end)
-    group_pie_plot(cut_data)
+    group_pie_plot(cut_data, month)
     # type_data = get_type_detail(cut_data)
     # type_table_plot(type_data)
     # agg_data_group = agg_level(start, end, 'group', 1)
@@ -199,4 +200,5 @@ def main():
 
 
 if __name__ == '__main__':
+    sys.settrace
     main()

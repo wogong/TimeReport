@@ -1,12 +1,11 @@
 """Main module to combine functions into complete services"""
+import os
+import argparse
 
 from db import *
 from note import *
 from time_api import *
 from plot_func import *
-import argparse
-import os
-import sys
 
 
 def update_db():
@@ -200,5 +199,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.settrace
     main()
